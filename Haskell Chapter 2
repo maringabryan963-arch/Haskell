@@ -1,0 +1,83 @@
+HC2T1 – Checking Types in GHCi
+
+Main.hs
+main = do
+    print (42 :: Int)
+    print (3.14 :: Double)
+    print ("Haskell" :: String)
+    print ('Z' :: Char)
+    print (True && False)
+
+HC2T2 – Function Type Signatures
+
+Main.hs
+add :: Int -> Int -> Int
+add x y = x + y
+isEven :: Int -> Bool
+isEven x = x `mod` 2 == 0
+concatStrings :: String -> String -> String
+concatStrings a b = a ++ b
+main = do
+    print (add 3 4)
+    print (isEven 7)
+    print (concatStrings "Hi " "there")
+
+HC2T3 – Immutable Variables
+
+Main.hs
+myAge :: Int
+myAge = 18
+piValue :: Double
+piValue = 3.14
+greeting :: String
+greeting = "Hello Haskell"
+isHaskellFun :: Bool
+isHaskellFun = True
+main = do
+    print myAge
+    print piValue
+    print greeting
+    print isHaskellFun
+
+HC2T4 – Converting Between Infix and Prefix Notations
+
+Main.hs
+main = do
+    print ((+) 5 3)
+    print ((*) 10 4)
+    print ((&&) True False)
+    print (7 + 2)
+    print (6 * 5)
+    print (True && False)
+
+HC2T5 – Defining and Using Functions
+
+circleArea :: Float -> Float
+circleArea r = pi * r * r
+isAdult :: Int -> Bool
+isAdult age = age >= 18
+main = do
+    print (circleArea 5.0)
+    print (isAdult 20)
+    print (isAdult 15)
+
+HC2T6 – Understanding Int vs Integer
+
+Main.hs
+smallNumber :: Int
+smallNumber = 2^62
+bigNumber :: Integer
+bigNumber = 2^127
+main = do
+    print smallNumber
+    print bigNumber
+    print (2^64 :: Int)
+
+HC2T7 – Boolean Expressions
+
+Main.hs
+main = do
+    print (True && True)
+    print (False || False)
+    print (not False)
+    print (3 == 5)
