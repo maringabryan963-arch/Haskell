@@ -1,0 +1,141 @@
+HC8T1
+Type Synonyms and Basic Function
+
+Main.hs
+type Address = String
+type Value = Int
+generateTx :: Address -> Address -> Value -> String
+generateTx from to val =
+  from ++ " -> " ++ to ++ " : " ++ show val
+main :: IO ()
+main = do
+  putStrLn (generateTx "Alice" "Bob" 100)
+
+HC8T2
+New Types and Data Constructors
+
+Main.hs
+data PaymentMethod = Cash | Card | Cryptocurrency deriving (Show)
+data Person = Person String (String, Int) PaymentMethod deriving (Show)
+bob :: Person
+bob = Person "Bob" ("Main Street", 12) Cash
+main :: IO ()
+main = do
+  print bob
+
+HC8T3
+Algebraic Data Types and Functions
+
+Main.hs
+data Shape = Circle Float | Rectangle Float Float deriving (Show)
+area :: Shape -> Float
+area (Circle r) = pi * r * r
+area (Rectangle w h) = w * h
+main :: IO ()
+main = do
+  print (area (Circle 5))
+  print (area (Rectangle 10 5))
+
+HC8T4
+Record Syntax for Employee
+
+Main.hs
+data Employee = Employee
+  { name :: String
+  , experienceInYears :: Float
+  } deriving Show
+richard :: Employee
+richard = Employee "Richard" 7.5
+main :: IO ()
+main = do
+  print richard
+
+HC8T5
+Record Syntax for Person
+
+Main.hs
+data PersonRec = PersonRec
+  { personName :: String
+  , personAge :: Int
+  , isEmployed :: Bool
+  } deriving Show
+person1 = PersonRec "Alice" 25 True
+person2 = PersonRec "John" 30 False
+main :: IO ()
+main = do
+  print person1
+  print person2
+
+HC8T6
+Record Syntax for Shape Variants
+
+Main.hs
+data ShapeRec
+  = CircleRec { center :: (Float, Float), color :: String, radius :: Float }
+  | RectangleRec { width :: Float, height :: Float, color :: String }
+  deriving Show
+circle1 = CircleRec (0,0) "Red" 5
+rect1 = RectangleRec 10 6 "Blue"
+main :: IO ()
+main = do
+  print circle1
+  print rect1
+
+HC8T7
+Data Types and Describing Animals
+
+Main.hs
+data Animal = Dog String | Cat String deriving Show
+describeAnimal :: Animal -> String
+describeAnimal (Dog n) = "Dog named " ++ n
+describeAnimal (Cat n) = "Cat named " ++ n
+main :: IO ()
+main = do
+  putStrLn (describeAnimal (Dog "Buddy"))
+  putStrLn (describeAnimal (Cat "Kitty"))
+
+HC8T8
+Type Synonyms and Greeting Function
+
+Main.hs
+type Name = String
+type Age = Int
+greet :: Name -> Age -> String
+greet n a = "Hello " ++ n ++ ", you are " ++ show a ++ " years old."
+main :: IO ()
+main = do
+  putStrLn (greet "Bryan" 18)
+
+HC8T9
+Record Type and Transaction Function
+
+Main.hs
+type Address = String
+type Value = Int
+data Transaction = Transaction
+  { fromAddr :: Address
+  , toAddr :: Address
+  , amount :: Value
+  , transactionId :: String
+  } deriving Show
+createTransaction :: Address -> Address -> Value -> String
+createTransaction f t v =
+  transactionId (Transaction f t v "TX001")
+main :: IO ()
+main = do
+  print (createTransaction "Alice" "Bob" 500)
+
+HC8T10
+Deriving Show for Book
+
+
+Main.hs
+data Book = Book
+  { title :: String
+  , author :: String
+  , year :: Int
+  } deriving Show
+book1 = Book "Learn Haskell" "John Doe" 2024
+main :: IO ()
+main = do
+  print book1
