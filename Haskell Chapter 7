@@ -1,0 +1,146 @@
+HC7T1
+Implement an Eq Instance for a Custom Data Type
+
+Main.hs
+module Main where
+data Color = Red | Green | Blue
+instance Eq Color where
+  Red   == Red   = True
+  Green == Green = True
+  Blue  == Blue  = True
+  _     == _     = False
+main :: IO ()
+main = do
+  print (Red == Red)
+  print (Red == Blue)
+  print (Green == Green)
+
+HC7T2
+Implement an Ord Instance for a Custom Data Type
+
+Main.hs
+data Color = Red | Green | Blue deriving (Show, Eq)
+instance Ord Color where
+  Red    <= _       = True
+  Green  <= Green   = True
+  Green  <= Blue    = True
+  Blue   <= Blue    = True
+  _      <= _       = False
+main = do
+  print (Red < Green)
+  print (Green < Blue)
+  print (Blue > Red)
+  print (Red >= Red)
+
+Function Using Multiple Constraints
+
+Main.hs
+compareValues :: (Eq a, Ord a) => a -> a -> a
+compareValues x y
+  | x >= y    = x
+  | otherwise = y
+main = do
+  print (compareValues 5 10)
+  print (compareValues "apple" "banana")
+
+HC7T4
+Custom Type with Show and Read
+
+Main.hs
+data Shape = Circle Double | Rectangle Double Double
+  deriving (Show, Read)
+main = do
+  print (Circle 5)
+  print (Rectangle 4 6)
+  print (read "Circle 7" :: Shape)
+
+HC7T5
+Function with Num Constraint
+
+
+Main.hs
+squareArea :: Num a => a -> a
+squareArea side = side * side
+main = do
+  print (squareArea 5)
+  print (squareArea 3.2)
+
+HC7T6
+Using Integral and Floating Type Classes
+
+Main.hs
+circleCircumference :: Floating a => a -> a
+circleCircumference r = 2 * pi * r
+main = do
+  print (circleCircumference 5)
+  print (circleCircumference 2.5)
+
+HC7T7
+Bounded and Enum
+
+Main.hs
+data Color = Red | Green | Blue deriving (Show, Enum, Bounded, Eq)
+nextColor :: Color -> Color
+nextColor c
+  | c == maxBound = minBound
+  | otherwise     = succ c
+main = do
+  print (nextColor Red)
+  print (nextColor Green)
+  print (nextColor Blue)
+
+HC7T8
+Parse a Value from a String Using Read
+
+Main.hs
+data Shape = Circle Double | Rectangle Double Double
+  deriving (Show, Read)
+parseShape :: String -> Maybe Shape
+parseShape str =
+  case reads str of
+    [(s, "")] -> Just s
+    _         -> Nothing
+main = do
+  print (parseShape "Circle 5")
+  print (parseShape "Rectangle 4 6")
+  print (parseShape "Triangle 3 4 5")
+
+Nothing
+HC7T9
+Type Class with Multiple Instances
+
+Main.hs
+data Shape = Circle Double | Rectangle Double Double
+  deriving Show
+class Describable a where
+  describe :: a -> String
+instance Describable Bool where
+  describe True  = "This is True"
+  describe False = "This is False"
+instance Describable Shape where
+  describe (Circle r)      = "Circle with radius " ++ show r
+  describe (Rectangle w h) = "Rectangle with width " ++ show w ++ " x " ++ show h
+main = do
+  putStrLn (describe True)
+  putStrLn (describe False)
+  putStrLn (describe (Circle 4))
+  putStrLn (describe (Rectangle 3 5))
+
+HC7T10
+Function with Multiple Type Class Constraints
+
+Main.hs
+data Shape = Circle Double | Rectangle Double Double
+  deriving (Show, Eq, Ord)
+class Describable a where
+  describe :: a -> String
+instance Describable Shape where
+  describe (Circle r)      = "Circle with radius " ++ show r
+  describe (Rectangle w h) = "Rectangle " ++ show w ++ " x " ++ show h
+describeAndCompare :: (Describable a, Ord a) => a -> a -> String
+describeAndCompare x y
+  | x >= y    = describe x
+  | otherwise = describe y
+main = do
+  putStrLn (describeAndCompare (Circle 5) (Circle 3))
+  putStrLn (describeAndCompare (Rectangle 2 3) (Rectangle 4 1))
