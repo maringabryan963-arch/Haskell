@@ -1,0 +1,90 @@
+HC4T1 – Defining a weatherReport Function
+
+Main.hs
+weatherReport "sunny"  = "It's a bright and beautiful day!"
+weatherReport "rainy"  = "Don't forget your umbrella!"
+weatherReport "cloudy" = "A bit gloomy, but no rain yet!"
+weatherReport _        = "Weather unknown"
+main = do
+    print (weatherReport "sunny")
+    print (weatherReport "rainy")
+    print (weatherReport "cloudy")
+    print (weatherReport "stormy")
+
+HC4T2 – Defining a dayType Function
+
+Main.hs
+dayType "Saturday"  = "It's a weekend!"
+dayType "Sunday"    = "It's a weekend!"
+dayType "Monday"    = "It's a weekday."
+dayType "Tuesday"   = "It's a weekday."
+dayType "Wednesday" = "It's a weekday."
+dayType "Thursday"  = "It's a weekday."
+dayType "Friday"    = "It's a weekday."
+dayType _           = "Invalid day"
+main = do
+    print (dayType "Saturday")
+    print (dayType "Tuesday")
+    print (dayType "Sunday")
+    print (dayType "Funday")
+
+HC4T3 – Defining a gradeComment Function
+
+Main.hs
+gradeComment x
+  | x >= 90 && x <= 100 = "Excellent!"
+  | x >= 70 && x <= 89  = "Good job!"
+  | x >= 50 && x <= 69  = "You passed."
+  | x >= 0  && x <= 49  = "Better luck next time."
+  | otherwise            = "Invalid grade"
+main = do
+    print (gradeComment 95)
+    print (gradeComment 75)
+    print (gradeComment 60)
+    print (gradeComment 30)
+    print (gradeComment 110)
+
+HC4T4 – Rewriting specialBirthday using Pattern Matching
+
+Main.hs
+specialBirthday 18 = "Congratulations on turning 18!"
+specialBirthday 21 = "Happy 21st Birthday!"
+specialBirthday _  = "Happy Birthday!"
+main = do
+    print (specialBirthday 18)
+    print (specialBirthday 21)
+    print (specialBirthday 30)
+
+HC4T5 – Adding a Catch-All Pattern with a Custom Message
+
+Main.hs
+specialBirthday 18 = "Congratulations on turning 18!"
+specialBirthday 21 = "Happy 21st Birthday!"
+specialBirthday age = "Happy Birthday! You are " ++ show age ++ " years old."
+main = do
+    print (specialBirthday 18)
+    print (specialBirthday 21)
+    print (specialBirthday 30)
+
+HC4T6 – Identifying List Contents Using Pattern Matching
+
+main = do
+    print (whatsInsideThisList [])
+    print (whatsInsideThisList [5])
+    print (whatsInsideThisList [1,2])
+    print (whatsInsideThisList [1,2,3,4])
+
+HC4T7 – Ignore Elements in a List
+
+Main.hs
+firstAndThird (x:_:z:_) = (x, z)
+firstAndThird _         = error "List does not have enough elements"
+main = do
+    print (firstAndThird [1,2,3,4])
+    print (firstAndThird ["a","b","c","d"])
+
+HC4T8 – Extract Values from Tuples
+
+main = do
+    print (describeTuple (1, 2, 3))
+    print (describeTuple ("apple", "banana", "cherry"))
