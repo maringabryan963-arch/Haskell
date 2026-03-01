@@ -1,0 +1,90 @@
+HC1T1 – Function Composition
+
+Main.hs
+double :: Int -> Int
+double x = x * 2
+increment :: Int -> Int
+increment x = x + 1
+doubleThenIncrement :: Int -> Int
+doubleThenIncrement = increment.double
+main :: IO()
+main = do
+    print(double 5)
+    print(increment 5)
+
+HC1T2 – Pure Function 
+
+Main.hs
+circleArea :: Double -> Double
+circleArea r = 3.142 * r * r
+main :: IO ()
+main = do
+    print (circleArea 4)
+
+HC1T3 – Checking if a Number is Greater than 18
+
+Main.hs
+greaterThan18 :: Int -> Bool
+greaterThan18 x = x > 18
+main :: IO ()
+main = do
+    print (greaterThan18 20)
+    print (greaterThan18 15)
+    print (greaterThan18 18)
+
+HC1T4 – Composing a Function to Process Player Data
+
+Main.hs
+import Data.List (sortBy)
+players :: [(String, Int)]
+players =
+    [("John", 50), ("Mary", 80), ("Alex", 70), ("Sarah", 90), ("Bob", 60)]
+extractPlayers :: [(String, Int)] -> [String]
+extractPlayers [] = []
+extractPlayers ((name, _):xs) = name : extractPlayers xs
+sortByScore :: [(String, Int)] -> [(String, Int)]
+sortByScore = sortBy (\(_, s1) (_, s2) -> compare s2 s1)
+topThree :: [(String, Int)] -> [(String, Int)]
+topThree = take 3
+getTopThreePlayers :: [(String, Int)] -> [String]
+getTopThreePlayers = extractPlayers . topThree . sortByScore
+main = do
+    print (getTopThreePlayers players)
+
+HC1T6 – Using Type Signatures
+
+Main.hs
+addNumbers :: Int -> Int -> Int
+addNumbers a b = a + b
+main = do
+    print (addNumbers 4 6)
+    print (addNumbers 15 25)
+Output:
+10
+40
+
+HC1T7 – Converting Fahrenheit to Celsius
+
+Main.hs
+fToC :: Float -> Float
+fToC f = (f - 32) * 5 / 9
+main = do
+    print (fToC 32)
+    print (fToC 68)
+    print (fToC 100)
+Output:
+0.0
+20.0
+37.77778
+
+HC1T8 – Higher-Order Functions
+
+Main.hs
+applyTwice :: (Int -> Int) -> Int -> Int
+applyTwice f x = f (f x)
+main = do
+    print (applyTwice (+1) 5)
+    print (applyTwice (*2) 3)
+Output:
+7
+12
