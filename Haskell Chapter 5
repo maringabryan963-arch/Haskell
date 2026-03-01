@@ -1,0 +1,81 @@
+HC5T1
+Using applyThrice
+
+
+Main.hs
+applyThrice :: (Int -> Int) -> Int -> Int
+applyThrice f x = f (f (f x))
+main = do
+  print (applyThrice (+2) 5)
+
+HC5T2
+
+Main.hs
+oddNumbers :: [Int]
+oddNumbers = filter odd [1..30]
+main = print oddNumbers
+
+HC5T3
+
+Main.hs
+startsWithUppercase :: String -> Bool
+startsWithUppercase "" = False
+startsWithUppercase (x:_) = x >= 'A' && x <= 'Z'
+containsUppercaseWord :: [String] -> Bool
+containsUppercaseWord = any startsWithUppercase
+main = do
+  print (containsUppercaseWord ["hello", "World", "test"])
+  print (containsUppercaseWord ["hello", "world"])
+
+HC5T4
+Using Lambda Functions
+
+
+Main.hs
+biggerThan10 :: Int -> Bool
+biggerThan10 = \x -> x > 10
+main = do
+  print (biggerThan10 5)
+  print (biggerThan10 15)
+
+HC5T5
+
+
+Main.hs
+multiplyByFive :: Int -> Int
+multiplyByFive = (*5)
+main = do
+  print (multiplyByFive 3)
+  print (multiplyByFive 10)
+
+HC5T6
+Function Composition
+
+Main.hs
+evenSquares :: [Int] -> [Int]
+evenSquares = filter even . map (^2)
+main = print (evenSquares [1..10])
+
+HC5T7
+
+Main.hs
+result :: Int
+result = sum $ map (*2) $ filter (>3) [1..10]
+main = print result
+
+HC5T8
+
+Main.hs
+addFive :: Int -> Int
+addFive = (+5)
+main = do
+  print (addFive 10)
+  print (addFive 0)
+
+HC5T9
+
+Main.hs
+transformList :: (a -> a) -> [a] -> [a]
+transformList f = map (f . f)
+main = do
+  print (transformList (+1) [1,2,3])
