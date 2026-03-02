@@ -1,0 +1,149 @@
+HC10T1
+ShowSimple Type Class
+
+Main.hs
+data PaymentMethod = Cash | Card | Cryptocurrency deriving Show
+class ShowSimple a where
+    showSimple :: a -> String
+instance ShowSimple PaymentMethod where
+    showSimple Cash = "Cash"
+    showSimple Card = "Card"
+    showSimple Cryptocurrency = "Cryptocurrency"
+main :: IO ()
+main = do
+    print (showSimple Cash)
+    print (showSimple Card)
+    print (showSimple Cryptocurrency)
+
+HC10T2
+Summable Type Class
+
+Main.hs
+class Summable a where
+    sumUp :: [a] -> a
+instance Summable Int where
+    sumUp = sum
+main :: IO ()
+main = do
+    print (sum [1, 2, 3, 4, 5])
+
+HC10T3
+Comparable Type Class
+
+Main.hs
+data Blockchain = Bitcoin | Ethereum | Cardano deriving Show
+class Comparable a where
+    compareWith :: a -> a -> Ordering
+instance Comparable Blockchain where
+    compareWith Bitcoin Bitcoin = EQ
+    compareWith Bitcoin _ = LT
+    compareWith Ethereum Ethereum = EQ
+    compareWith Ethereum Bitcoin = GT
+    compareWith Ethereum _ = LT
+    compareWith Cardano Cardano = EQ
+    compareWith Cardano _ = GT
+main :: IO ()
+main = do
+    print (compareWith Bitcoin Ethereum)
+    print (compareWith Ethereum Cardano)
+    print (compareWith Cardano Bitcoin)
+
+HC10T4
+Eq Instance for Box
+
+Main.hs
+data Box a = Empty | Has a deriving Show
+instance Eq a => Eq (Box a) where
+    Empty == Empty = True
+    Has x == Has y = x == y
+    _ == _ = False
+main :: IO ()
+main = do
+    print (Has 5 == Has 5)
+    print (Has 5 == Has 10)
+    print ((Empty :: Box Int) == Empty)
+
+HC10T5
+ShowDetailed Type Class
+
+Main.hs
+class ShowDetailed a where
+    showDetailed :: a -> String
+data User = User String Int
+instance ShowDetailed User where
+    showDetailed (User name age) =
+        "User name: " ++ name ++ ", Age: " ++ show age
+main :: IO ()
+main = do
+    let u = User "Bryan" 18
+    putStrLn (showDetailed u)
+
+HC10T6
+Mutual Recursion in Eq for Blockchain
+Modify the Eq type class to use mutual recursion between == and /= in an instance for the Blockchain type.
+
+Main.hs
+data Blockchain = Blockchain Int deriving Show
+instance Eq Blockchain where
+    x == y = not (x /= y)
+    Blockchain a /= Blockchain b = a /= b
+main :: IO ()
+main = do
+    print (Blockchain 5 == Blockchain 5)
+    print (Blockchain 3 /= Blockchain 7)
+
+HC10T7
+Convertible Type Class
+
+Main.hs
+data PaymentMethod = Cash | Card | Cryptocurrency deriving Show
+class Convertible a b where
+    convert :: a -> b
+instance Convertible PaymentMethod String where
+    convert Cash = "Cash"
+    convert Card = "Card"
+    convert Cryptocurrency = "Cryptocurrency"
+main :: IO ()
+main = do
+    print (convert Cash :: String)
+    print (convert Card :: String)
+
+HC10T8
+AdvancedEq Subclass of Eq
+
+Main.hs
+class Eq a => AdvancedEq a where
+    compareEquality :: a -> a -> Bool
+instance AdvancedEq Int where
+    compareEquality x y = x == y
+main :: IO ()
+main = do
+    print (compareEquality (5 :: Int) (5 :: Int))
+    print (compareEquality (3 :: Int) (8 :: Int))
+
+HC10T9
+MinMax Type Class
+
+Main.hs
+class MinMax a where
+    minValue :: a
+    maxValue :: a
+instance MinMax Int where
+    minValue = minBound
+    maxValue = maxBound
+main :: IO ()
+main = do
+    print (minValue :: Int)
+    print (maxValue :: Int)
+
+HC10T10
+Concatenatable Type Class
+
+Main.hs
+class Concatenatable a where
+    concatWith :: a -> a -> a
+instance Concatenatable String where
+    concatWith = (++)
+main :: IO ()
+main = do
+    print (concatWith "Hello " "World")
