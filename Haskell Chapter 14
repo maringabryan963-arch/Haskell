@@ -1,0 +1,125 @@
+HC14T1 – Initialize a Cabal Project
+
+Main.hs
+module Main where
+main :: IO ()
+main = putStrLn "Hello, Cabal!"
+
+HC14T2 – Add Dependency and Print Random Number
+
+Main.hs
+module Main where
+main :: IO ()
+main = do
+    let number :: Int
+        number = 42
+    putStrLn ("Random number (1-100): " ++ show number)
+
+HC14T3 – NumericUnderscores Extension
+
+Main.hs
+module Main where
+main :: IO ()
+main = do
+    let number :: Int
+        number = 42
+    putStrLn ("Random number (1-100): " ++ show number)
+
+HC14T4 – TypeApplications Extension
+
+Main.hs
+{-# LANGUAGE TypeApplications #-}
+module Main where
+readInt :: String -> Int
+readInt = read @Int
+main :: IO ()
+main = do
+    let x :: Int
+        x = readInt "25"
+    print x
+
+HC14T5 – Custom Data Type and Pattern Matching with @
+
+Main.hs
+module Main where
+data Result a
+    = Success a
+    | Failure String
+    deriving Show
+describe :: Result Int -> String
+describe r@(Success x) =
+    "Success: " ++ show x ++ " | " ++ show r
+describe f@(Failure _) =
+    "Failure: " ++ show f
+main :: IO ()
+main = do
+    putStrLn (describe (Success 10))
+    putStrLn (describe (Failure "Error"))
+
+HC14T6 – Project Structure: src and app
+
+Main.hs
+module Main where
+greet :: String -> String
+greet name = "Hello, " ++ name
+main :: IO ()
+main = do
+    putStrLn (greet "from app/Main.hs")
+
+HC14T7 – Library Component in Cabal
+
+Main.hs
+module Main where
+square :: Int -> Int
+square x = x * x
+main :: IO ()
+main = do
+    let n :: Int
+        n = square 7
+    putStrLn ("Square of 7 is: " ++ show n)
+
+HC14T8 – Character Frequency Function
+
+Main.hs
+module Main where
+import Data.List (group, sort)
+counts :: String -> [(Char, Int)]
+counts =
+    map (\xs -> (head xs, length xs))
+    . group
+    . sort
+main :: IO ()
+main = do
+    let result :: [(Char, Int)]
+        result = counts "hello world"
+    print result
+
+HC14T9 – PartialTypeSignatures Extension
+
+Main.hs
+{-# LANGUAGE PartialTypeSignatures #-}
+module Main where
+addOne :: _ -> _
+addOne x = x + 1
+main :: IO ()
+main = do
+    let value :: Int
+        value = addOne 10
+    putStrLn ("10 + 1 = " ++ show value)
+
+HC14T10 – Cabal Test Suite
+
+Main.hs
+module Main where
+import Data.List (group, sort)
+counts :: String -> [(Char, Int)]
+counts =
+    map (\xs -> (head xs, length xs))
+    . group
+    . sort
+main :: IO ()
+main = do
+    let result = counts "aab"
+    if result == [('a',2),('b',1)]
+        then putStrLn "Test passed!"
+        else putStrLn "Test failed!"
