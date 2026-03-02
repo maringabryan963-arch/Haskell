@@ -1,0 +1,99 @@
+HC13T1 – List Files in Directory
+
+Main.hs
+import System.Directory (listDirectory)
+main :: IO ()
+main = do
+    files <- listDirectory "."
+    print files
+
+HC13T2 – Filter Files by Substring
+
+Main.hs
+import Data.List (sort, isInfixOf)
+filterAndSort :: String -> [String] -> [String]
+filterAndSort sub files = sort (filter (isInfixOf sub) files)
+main :: IO ()
+main =
+    print (filterAndSort "hs" ["Z.hs", "A.txt", "B.hs"])
+
+HC13T3 – Sort and Return Filtered Files
+
+Main.hs
+import Data.List (sort, isInfixOf)
+searchAndSort :: String -> [String] -> [String]
+searchAndSort sub files =
+    sort (filter (isInfixOf sub) files)
+main :: IO ()
+main =
+    print (searchAndSort "hs" ["Z.hs", "Main.hs", "Readme.md"])
+
+HC13T4 – SumNonEmpty Module
+
+Main.hs
+module SumNonEmpty where
+sumNonEmpty :: [Int] -> Int
+sumNonEmpty [] = error "List cannot be empty"
+sumNonEmpty xs = sum xs
+Output:
+
+HC13T5 – Restrict Module Export List
+
+Main.hs
+module SumNonEmpty (sumNonEmpty) where
+errorMessage :: String
+errorMessage = "List cannot be empty"
+sumNonEmpty :: [Int] -> Int
+sumNonEmpty [] = error errorMessage
+sumNonEmpty xs = sum xs
+
+HC13T6 – File Names to Map
+
+Main.hs
+import qualified Data.Map as Map
+filesToMap :: [String] -> Map.Map Int String
+filesToMap files = Map.fromList (zip [1..] files)
+main :: IO ()
+main =
+    print (filesToMap ["Main.hs", "Test.txt", "App.hs"])
+
+HC13T7 – Using Custom Module in Main
+
+Main.hs
+sumNonEmpty :: [Int] -> Int
+sumNonEmpty [] = error "List cannot be empty"
+sumNonEmpty xs = sum xs
+main :: IO ()
+main =
+    print (sumNonEmpty [1,2,3,4])
+
+HC13T8 – Qualified Imports for Name Conflicts
+
+Main.hs
+import qualified Data.List as L
+import qualified Data.Map as M
+main :: IO ()
+main = do
+    print (L.sort [3,1,2])
+    print (M.fromList [(1,"a"), (2,"b")])
+
+HC13T9 – Renaming Module Namespace
+
+Main.hs
+import qualified Data.List as DL
+import qualified Data.Char as DC
+main :: IO ()
+main = do
+    print (DL.sort [3,1,2])
+    print (map DC.toUpper "haskell")
+
+HC13T10 – Multi-Module Main Function
+
+Main.hs
+import Data.List (sort, isInfixOf)
+searchAndSort :: String -> [String] -> [String]
+searchAndSort sub files =
+    sort (filter (isInfixOf sub) files)
+main :: IO ()
+main =
+    print (searchAndSort "hs" ["Z.hs", "Main.hs", "Readme.md"])
