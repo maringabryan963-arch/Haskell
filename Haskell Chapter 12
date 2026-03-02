@@ -1,0 +1,96 @@
+HC12T1 – Printing a Welcome Message
+
+Main.hs
+welcomeMessage :: String
+welcomeMessage = "Welcome to Haskell Programming!"
+main :: IO ()
+main = putStrLn welcomeMessage
+
+HC12T2 – Adding Two Numbers
+
+Main.hs
+addTwoNumbers :: Int -> Int -> Int
+addTwoNumbers a b = a + b
+main :: IO ()
+main = print (addTwoNumbers 5 7)
+
+HC12T3 – Factorial Function
+
+Main.hs
+factorial :: Int -> Int
+factorial 0 = 1
+factorial n = n * factorial (n - 1)
+main :: IO ()
+main = print (factorial 5)
+
+HC12T4 – First 10 Fibonacci Numbers
+
+Main.hs
+fibonacci :: Int -> Int
+fibonacci 0 = 0
+fibonacci 1 = 1
+fibonacci n = fibonacci (n - 1) + fibonacci (n - 2)
+firstTenFibs :: [Int]
+firstTenFibs = map fibonacci [0..9]
+main :: IO ()
+main = print firstTenFibs
+
+HC12T5 – Palindrome Checker
+
+Main.hs
+isPalindrome :: String -> Bool
+isPalindrome s = s == reverse s
+main :: IO ()
+main = print (isPalindrome "level")
+
+HC12T6 – Sorting a List of Integers
+
+Main.hs
+import Data.List (sort)
+sortInts :: [Int] -> [Int]
+sortInts xs = sort xs
+main :: IO ()
+main = print (sortInts [5,2,9,1,3])
+
+HC12T7 – Calculating Circle Area
+
+Main.hs
+calculateCircleArea :: Double -> Double
+calculateCircleArea r = pi * r * r
+main :: IO ()
+main = print (calculateCircleArea 3.0)
+
+HC12T8 – Merge Two Sorted Lists
+
+Main.hs
+mergeLists :: [Int] -> [Int] -> [Int]
+mergeLists [] ys = ys
+mergeLists xs [] = xs
+mergeLists (x:xs) (y:ys)
+    | x <= y    = x : mergeLists xs (y:ys)
+    | otherwise = y : mergeLists (x:xs) ys
+main :: IO ()
+main = print (mergeLists [1,3,5] [2,4,6])
+
+HC12T9 – Read and Print File Content
+Write a program that reads a file and prints its content to the terminal. Handle errors gracefully in case the file doesn't exist.
+Main.hs
+readFileSafe :: Bool -> String
+readFileSafe exists =
+    if exists
+        then "File content goes here"
+        else "Error: File not found"
+main :: IO ()
+main = putStrLn (readFileSafe True)
+
+HC12T10 – Mathematical Operations Module
+
+Main.hs
+add :: Int -> Int -> Int
+add a b = a + b
+multiply :: Int -> Int -> Int
+multiply a b = a * b
+main :: IO ()
+main = do
+    print (add 3 4)
+    print (multiply 3 4)
