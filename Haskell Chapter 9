@@ -1,0 +1,126 @@
+HC9T1
+Defining a Parametric Type Synonym
+
+Main.hs
+type Entity a = (String, a)
+main :: IO ()
+main = do
+  let e1 = ("Company", "123 Main St")
+  let e2 = ("Warehouse", "456 Side Rd")
+  print e1
+  print e2
+
+HC9T2
+Implementing a Parametric Data Type
+
+Main.hs
+data Box a = Empty | Has a deriving Show
+main :: IO ()
+main = do
+  let b1 = Empty :: Box Int
+  let b2 = Has 42
+  print b1
+  print b2
+
+HC9T3
+Function to Add Values in a Box
+
+Main.hs
+data Box a = Empty | Has a deriving Show
+addN :: Num a => a -> Box a -> Box a
+addN n Empty = Empty
+addN n (Has x) = Has (x + n)
+main :: IO ()
+main = do
+  let b = Has 10
+  print (addN 5 b)
+  print (addN 5 Empty)
+
+HC9T4
+Extracting a Value from a Box
+
+Main.hs
+data Box a = Empty | Has a deriving Show
+extract :: a -> Box a -> a
+extract def Empty = def
+extract _ (Has x) = x
+main :: IO ()
+main = do
+  let b1 = Has 100
+  let b2 = Empty :: Box Int
+  print (extract 0 b1)
+  print (extract 0 b2)
+
+HC9T5
+Parametric Data Type with Record Syntax
+
+Main.hs
+data Shape a = Circle { radius :: Float, color :: a }
+             | Rectangle { width :: Float, height :: Float, color :: a }
+             deriving Show
+main :: IO ()
+main = do
+  let c = Circle 5 "Red"
+  let r = Rectangle 10 5 "Blue"
+  print c
+  print r
+
+HC9T6
+Recursive Data Type for Tweets
+
+Main.hs
+data Tweet = Tweet { content :: String, likes :: Int, comments :: [Tweet] } deriving Show
+main :: IO ()
+main = do
+  let t1 = Tweet "Hello world!" 5 []
+  let t2 = Tweet "Another tweet" 3 [t1]
+  print t1
+  print t2
+
+HC9T7
+Engagement Function for Tweets
+
+Main.hs
+data Tweet = Tweet { content :: String, likes :: Int, comments :: [Tweet] } deriving Show
+engagement :: Tweet -> Int
+engagement (Tweet _ l cs) = l + sum (map engagement cs)
+main :: IO ()
+main = do
+  let t1 = Tweet "Hello" 5 []
+  let t2 = Tweet "World" 3 [t1]
+  print (engagement t1)
+  print (engagement t2)
+
+HC9T8
+Recursive Sequence Data Type
+
+Main.hs
+data Sequence a = Node a (Sequence a) | End deriving Show
+main :: IO ()
+main = do
+  let seq1 = Node 1 (Node 2 (Node 3 End))
+  print seq1
+
+HC9T9
+Checking for Element in a Sequence
+
+Main.hs
+data Sequence a = Node a (Sequence a) | End deriving Show
+elemSeq :: Eq a => a -> Sequence a -> Bool
+elemSeq _ End = False
+elemSeq x (Node y ys) = (x == y) || elemSeq x ys
+main :: IO ()
+main = do
+  let seq1 = Node 1 (Node 2 (Node 3 End))
+  print (elemSeq 2 seq1)
+  print (elemSeq 5 seq1)
+
+HC9T10
+Binary Search Tree Data Type
+
+Main.hs
+data BST a = Empty | Node a (BST a) (BST a) deriving Show
+main :: IO ()
+main = do
+  let tree = Node 10 (Node 5 Empty Empty) (Node 15 Empty Empty)
+  print tree
