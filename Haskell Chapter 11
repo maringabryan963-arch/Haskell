@@ -1,0 +1,139 @@
+C11T1
+WeAccept Instance for Box
+
+Main.hs
+data Box = Box String deriving (Show, Eq)
+class WeAccept a where
+    accepted :: a -> Bool
+    fancyFunction :: a -> String
+instance WeAccept Box where
+    accepted (Box "") = False
+    accepted (Box _)  = True
+    fancyFunction (Box "") = "Empty Box"
+    fancyFunction (Box s)  = "Box contains: " ++ s
+acceptedBoxes :: [Box] -> [Box]
+acceptedBoxes = filter accepted
+main :: IO ()
+main = print (acceptedBoxes [Box "Phone", Box "", Box "Book"])
+
+HC11T2
+Fancy Function for WeAccept
+
+Main.hs
+data Box = Box String deriving (Show, Eq)
+class WeAccept a where
+    fancyFunction :: a -> String
+instance WeAccept Box where
+    fancyFunction (Box "") = "Empty Box"
+    fancyFunction (Box s)  = "Box contains: " ++ s
+main :: IO ()
+main = do
+    print (fancyFunction (Box "Cardano"))
+    print (fancyFunction (Box "Cash"))
+    print (fancyFunction (Box "Country"))
+
+HC11T3
+Container Type Class for Box
+
+Main.hs
+data Box = Box String deriving (Show, Eq)
+class Container c where
+    isEmpty  :: c -> Bool
+    contains :: c -> String -> Bool
+    replace  :: c -> String -> c
+instance Container Box where
+    isEmpty (Box "") = True
+    isEmpty _        = False
+    contains (Box s) x = s == x
+    replace _ new = Box new
+main :: IO ()
+main = do
+    let myBox = Box "Toy"
+    print (isEmpty myBox)
+    print (contains myBox "Toy")
+    print (replace myBox "NewToy")
+
+HC11T4
+Container Instance for Present
+
+Main.hs
+class Container c where
+    isEmpty  :: c -> Bool
+    contains :: c -> String -> Bool
+    replace  :: c -> String -> c
+data Present = Present String
+instance Container Present where
+    isEmpty (Present x) = x == ""
+    contains (Present x) y = x == y
+    replace (Present _) y = Present y
+main = print (contains (Present "Watch") "Watch")
+
+HC11T5
+guessWhatsInside Function for Containers
+
+Main.hs
+data Box = Box String deriving (Show, Eq)
+class Container c where
+    contains :: c -> String -> Bool
+instance Container Box where
+    contains (Box s) x = s == x
+guessWhatsInside :: Box -> String -> String
+guessWhatsInside c item =
+    if contains c item then "Found it!" else "Not here!"
+main :: IO ()
+main = print (guessWhatsInside (Box "Toy") "Toy")
+
+HC11T6
+AdvancedEq for Blockchain
+
+Main.hs
+class Eq a => AdvancedEq a where
+    compareEquality :: a -> a -> String
+data Blockchain = Blockchain Int deriving Eq
+instance AdvancedEq Blockchain where
+    compareEquality a b =
+        if a == b then "Same Block" else "Different Blocks"
+main = print (compareEquality (Blockchain 1) (Blockchain 2))
+
+HC11T7
+Ord Instance for Box
+
+Main.hs
+data Box = Box Int deriving Eq
+instance Ord Box where
+    compare (Box a) (Box b) = compare a b
+main = print (Box 3 > Box 1)
+
+HC11T8
+Deriving Eq and Ord for PaymentMethod
+
+Main.hs
+data PaymentMethod = Cash | Card | Crypto
+    deriving (Eq, Ord, Show)
+main = do
+    print (Cash < Card)
+    print (Crypto > Card)
+
+HC11T9
+Data Type Length with Units
+
+Main.hs
+data Length = M Double | Km Double deriving (Show)
+instance Eq Length where
+    (M a)  == (M b)  = a == b
+    (Km a) == (Km b) = a == b
+    (M a)  == (Km b) = a == b * 1000
+    (Km a) == (M b)  = a * 1000 == b
+main = do
+    print (M 1000 == Km 1)
+    print (M 500 == Km 1)
+
+HC11T10
+sortContainers Function
+
+Main.hs
+import Data.List (sort)
+data Container = Container String Int deriving (Show, Eq, Ord)
+sortContainers :: [Container] -> [Container]
+sortContainers = sort
+main = print (sortContainers [Container "C" 3, Container "A" 1, Container "B" 2])
