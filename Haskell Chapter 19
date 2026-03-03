@@ -1,0 +1,232 @@
+HC19T1
+Applicative Instance for Pair
+
+Main.hs
+module Main where
+data Pair a = Pair a a deriving (Show)
+instance Functor Pair where
+  fmap f (Pair x y) = Pair (f x) (f y)
+instance Applicative Pair where
+  pure x = Pair x x
+  (Pair f g) <*> (Pair x y) = Pair (f x) (g y)
+main :: IO ()
+main = print $ Pair (+1) (*2) <*> Pair 3 5
+
+HC19T2
+addThreeApplicative Function
+
+Main.hs
+module Main where
+addThreeApplicative :: Maybe Int -> Maybe Int -> Maybe Int -> Maybe Int
+addThreeApplicative a b c = (+) <$> a <*> ((+) <$> b <*> c)
+main :: IO ()
+main = print $ addThreeApplicative (Just 2) (Just 3) (Just 5)
+
+HC19T3
+safeProduct for Maybe Int
+
+Main.hs
+module Main where
+import Control.Applicative
+safeProduct :: [Maybe Int] -> Maybe Int
+safeProduct = foldr (liftA2 (*)) (Just 1)
+main :: IO ()
+main = do
+  print $ safeProduct [Just 2, Just 3, Just 4]
+  print $ safeProduct [Just 2, Nothing, Just 4]
+
+HC19T4
+liftAndMultiply with liftA2
+
+Main.hs
+module Main where
+import Control.Applicative
+liftAndMultiply :: (Int -> Int -> Int) -> Maybe Int -> Maybe Int -> Maybe Int
+liftAndMultiply = liftA2
+main :: IO ()
+main = print $ liftAndMultiply (*) (Just 3) (Just 5)
+
+HC19T5
+applyEffects with <*>
+
+Main.hs
+module Main where
+applyEffects :: (IO Int, IO Int) -> IO Int
+applyEffects (io1, io2) = (+) <$> io1 <*> io2
+main :: IO ()
+main = do
+  result <- applyEffects (return 10, return 5)
+  print result
+
+HC19T6
+repeatEffect with forever
+
+Main.hs
+module Main where
+import Control.Monad
+repeatEffect :: IO () -> IO ()
+repeatEffect = forever
+main :: IO ()
+main = putStrLn "repeatEffect not demoed to avoid infinite loop"
+
+HC19T7
+conditionalPrint with when
+
+Main.hs
+module Main where
+import Control.Monad (when)
+conditionalPrint :: Bool -> String -> IO ()
+conditionalPrint cond msg = when cond (putStrLn msg)
+main :: IO ()
+main = do
+  conditionalPrint True "Print this"
+  conditionalPrint False "Do not print"
+
+HC19T8
+discardSecond with <*
+
+Main.hs
+module Main where
+discardSecond :: IO a -> IO b -> IO a
+discardSecond = (<*)
+main :: IO ()
+main = discardSecond (putStrLn "First") (putStrLn "Second")
+
+HC19T9
+pureAndApply Demonstration
+
+Main.hs
+module Main where
+pureAndApply :: IO Int
+pureAndApply = (+) <$> pure 10 <*> pure 5
+main :: IO ()
+main = print =<< pureAndApply
+
+HC19T10
+combineResults for Either
+
+Main.hs
+module Main where
+import Control.Applicative
+combineResults :: Either String Int -> Either String Int -> Either String Int
+combineResults = liftA2 (+)
+main :: IO ()
+main = print $ combineResults (Right 3 :: Either String Int) (Right 7)
+
+HC19T11
+Applicative Instance for Wrapper
+
+Main.hs
+module Main where
+data Wrapper a = Wrapper a deriving (Show)
+instance Functor Wrapper where
+  fmap f (Wrapper x) = Wrapper (f x)
+instance Applicative Wrapper where
+  pure = Wrapper
+  (Wrapper f) <*> (Wrapper x) = Wrapper (f x)
+main :: IO ()
+main = print $ Wrapper (+3) <*> Wrapper 7
+
+HC19T12
+sumThreeApplicative for Either String Int
+
+Main.hs
+module Main where
+import Control.Applicative
+sumThreeApplicative :: Either String Int -> Either String Int -> Either String Int -> Either String Int
+sumThreeApplicative a b c = (+) <$> a <*> ((+) <$> b <*> c)
+main :: IO ()
+main = print $ sumThreeApplicative (Right 2) (Right 3) (Right 5)
+
+HC19T13
+whenApplicative Function
+
+Main.hs
+module Main where
+whenApplicative :: Bool -> IO () -> IO ()
+whenApplicative cond action = if cond then action else pure ()
+main :: IO ()
+main = do
+  whenApplicative True (putStrLn "Executed")
+  whenApplicative False (putStrLn "Not executed")
+
+HC19T14
+replicateEffect with replicateM
+
+Main.hs
+module Main where
+import Control.Monad
+replicateEffect :: Int -> IO a -> IO ()
+replicateEffect n action = replicateM n action >> return ()
+main :: IO ()
+main = replicateEffect 3 (putStrLn "Hello")
+
+HC19T15
+sequenceEffects for Applicative List
+
+Main.hs
+module Main where
+sequenceEffects :: [IO ()] -> IO ()
+sequenceEffects = sequence_
+main :: IO ()
+main = sequenceEffects [putStrLn "One", putStrLn "Two", putStrLn "Three"]
+
+HC19T16
+applyWithEffects and <*>
+
+Main.hs
+module Main where
+applyWithEffects :: IO (Int -> Int) -> IO Int -> IO Int
+applyWithEffects = (<*>)
+main :: IO ()
+main = do
+  result <- applyWithEffects (return (+10)) (return 5)
+  print result
+
+HC19T17
+simulateMaybeEffect for Multiple Maybe
+
+Main.hs
+module Main where
+simulateMaybeEffect :: Maybe Int -> Maybe Int -> Maybe Int
+simulateMaybeEffect a b = (+) <$> a <*> b
+main :: IO ()
+main = do
+  print $ simulateMaybeEffect (Just 3) (Just 7)
+  print $ simulateMaybeEffect (Just 3) Nothing
+
+HC19T18
+combineEitherResults with Multiple Either
+
+Main.hs
+module Main where
+combineEitherResults :: Either String Int -> Either String Int -> Either String Int
+combineEitherResults a b = (+) <$> a <*> b
+main :: IO ()
+main = do
+  print $ combineEitherResults (Right 5) (Right 10)
+  print $ combineEitherResults (Left "err1") (Right 10)
+
+HC19T19
+sequenceApplicative for Maybe List
+
+Main.hs
+module Main where
+sequenceApplicative :: [Maybe a] -> Maybe [a]
+sequenceApplicative [] = Just []
+sequenceApplicative (x:xs) = (:) <$> x <*> sequenceApplicative xs
+main :: IO ()
+main = do
+  print $ sequenceApplicative [Just 1, Just 2, Just 3]
+  print $ sequenceApplicative [Just 1, Nothing, Just 3]
+
+HC19T20
+replicateForever with forever
+
+Main.hs
+module Main where
+import Control.Monad
+replicateForever :: IO () -> IO ()
+replicateForever = forever
+main :: IO ()
+main = putStrLn "replicateForever not demoed to avoid infinite loop"
