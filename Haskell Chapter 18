@@ -1,0 +1,136 @@
+HC18T1
+mapToLower Function with fmap
+
+Main.hs
+module Main where
+import Data.Char (toLower)
+mapToLower :: [Char] -> [Char]
+mapToLower = fmap toLower
+main :: IO ()
+main = do
+    let s = "Hello World!"
+    putStrLn $ "Lowercased string: " ++ mapToLower s
+
+HC18T2
+Functor Instance for Tree
+
+Main.hs
+module Main where
+data Tree a = Empty | Node a (Tree a) (Tree a) deriving (Show)
+instance Functor Tree where
+    fmap _ Empty = Empty
+    fmap f (Node x l r) = Node (f x) (fmap f l) (fmap f r)
+main :: IO ()
+main = do
+    let tree = Node 1 (Node 2 Empty Empty) (Node 3 Empty Empty)
+    putStrLn $ "Tree after fmap (*2): " ++ show (fmap (*2) tree)
+
+HC18T3
+incrementTreeValues Function
+
+Main.hs
+module Main where
+data Tree a = Empty | Node a (Tree a) (Tree a) deriving (Show)
+instance Functor Tree where
+    fmap _ Empty = Empty
+    fmap f (Node x l r) = Node (f x) (fmap f l) (fmap f r)
+incrementTreeValues :: Num a => Tree a -> Tree a
+incrementTreeValues = fmap (+1)
+main :: IO ()
+main = do
+    let tree = Node 5 (Node 3 Empty Empty) (Node 7 Empty Empty)
+    putStrLn $ "Incremented tree: " ++ show (incrementTreeValues tree)
+
+HC18T4
+mapToBits Function
+
+Main.hs
+module Main where
+mapToBits :: [Bool] -> [Char]
+mapToBits = fmap (\b -> if b then '1' else '0')
+main :: IO ()
+main = do
+    let bools = [True, False, True, True, False]
+    putStrLn $ "Mapped to bits: " ++ mapToBits bools
+
+HC18T5
+Functor Instance for Either
+
+Main.hs
+module Main where
+data MyEither e a = MyLeft e | MyRight a deriving (Show)
+instance Functor (MyEither e) where
+    fmap _ (MyLeft x) = MyLeft x
+    fmap f (MyRight y) = MyRight (f y)
+main :: IO ()
+main = do
+    let r = MyRight 10 :: MyEither String Int
+        l = MyLeft "Error" :: MyEither String Int
+    print $ fmap (*2) r
+    print $ fmap (*2) l
+
+HC18T6
+applyToMaybe Function
+
+Main.hs
+module Main where
+applyToMaybe :: (a -> b) -> Maybe a -> Maybe b
+applyToMaybe = fmap
+main :: IO ()
+main = do
+    let val1 = Just 5
+        val2 = Nothing
+    print $ applyToMaybe (+3) val1
+    print $ applyToMaybe (+3) val2
+
+HC18T7
+fmapTuple Function
+
+Main.hs
+module Main where
+fmapTuple :: (b -> c) -> (a, b) -> (a, c)
+fmapTuple = fmap
+main :: IO ()
+main = do
+    let t = ("Age", 20)
+    print $ fmapTuple (+5) t
+
+HC18T8
+identityLawCheck Function
+
+Main.hs
+module Main where
+identityLawCheck :: (Functor f, Eq (f a)) => f a -> Bool
+identityLawCheck x = fmap id x == x
+main :: IO ()
+main = do
+    let list = [1,2,3]
+        maybeVal = Just 10
+    print $ identityLawCheck list
+    print $ identityLawCheck maybeVal
+
+HC18T9
+compositionLawCheck Function
+
+Main.hs
+module Main where
+compositionLawCheck :: (Functor f, Eq (f c)) => (b -> c) -> (a -> b) -> f a -> Bool
+compositionLawCheck f g x = fmap (f . g) x == (fmap f . fmap g) x
+main :: IO ()
+main = do
+    let list = [1,2,3]
+        f = (*2)
+        g = (+1)
+    print $ compositionLawCheck f g list
+
+HC18T10
+nestedFmap Function
+
+Main.hs
+module Main where
+nestedFmap :: (Functor f, Functor g) => (a -> b) -> f (g a) -> f (g b)
+nestedFmap f = fmap (fmap f)
+main :: IO ()
+main = do
+    let nested = [Just 1, Nothing, Just 3]
+    print $ nestedFmap (*10) nested
