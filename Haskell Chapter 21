@@ -1,0 +1,607 @@
+HC21T1 – Writer—Logging Calculator
+
+Main.hs
+module Main where
+newtype Writer w a = Writer { runWriter :: (a, w) }
+addW :: Int -> Int -> Writer [String] Int
+addW x y = Writer (x + y, ["Added " ++ show x ++ " and " ++ show y])
+subW :: Int -> Int -> Writer [String] Int
+subW x y = Writer (x - y, ["Subtracted " ++ show y ++ " from " ++ show x])
+mulW :: Int -> Int -> Writer [String] Int
+mulW x y = Writer (x * y, ["Multiplied " ++ show x ++ " and " ++ show y])
+calcDemo :: Writer [String] Int
+calcDemo =
+    let Writer (a1, l1) = addW 3 5
+        Writer (a2, l2) = mulW a1 2
+        Writer (a3, l3) = subW a2 4
+    in Writer (a3, l1 ++ l2 ++ l3)
+main :: IO ()
+main = do
+    let Writer (result, log) = calcDemo
+    putStrLn $ "Result: " ++ show result
+    putStrLn "Logs:"
+    mapM_ putStrLn log
+
+HC21T2 – Writer—Implement Functor/Applicative/Monad
+
+Main.hs
+module Main where
+import Data.Monoid
+newtype Writer w a = Writer { runWriter :: (a, w) }
+instance Functor (Writer w) where
+    fmap f (Writer (a, w)) = Writer (f a, w)
+instance Monoid w => Applicative (Writer w) where
+    pure a = Writer (a, mempty)
+    Writer (f, w1) <*> Writer (a, w2) = Writer (f a, w1 <> w2)
+instance Monoid w => Monad (Writer w) where
+    Writer (a, w1) >>= k =
+        let Writer (b, w2) = k a
+        in Writer (b, w1 <> w2)
+tell :: w -> Writer w ()
+tell w = Writer ((), w)
+demo :: Writer [String] Int
+demo = do
+    tell ["Start"]
+    tell ["Processing"]
+    return 42
+main :: IO ()
+main = do
+    let Writer (res, log) = demo
+    print res
+    mapM_ putStrLn log
+
+HC21T3 – Writer—listen / pass Helpers
+
+Main.hs
+module Main where
+import Data.Monoid
+import Data.List (isInfixOf)
+newtype Writer w a = Writer { runWriter :: (a, w) }
+instance Functor (Writer w) where
+    fmap f (Writer (a, w)) = Writer (f a, w)
+instance Monoid w => Applicative (Writer w) where
+    pure a = Writer (a, mempty)
+    Writer (f, w1) <*> Writer (a, w2) = Writer (f a, w1 <> w2)
+instance Monoid w => Monad (Writer w) where
+    Writer (a, w1) >>= k =
+        let Writer (b, w2) = k a
+        in Writer (b, w1 <> w2)
+tell :: w -> Writer w ()
+tell w = Writer ((), w)
+listen :: Monoid w => Writer w a -> Writer w (a, w)
+listen (Writer (a, w)) = Writer ((a, w), w)
+pass :: Monoid w => Writer w (a, w -> w) -> Writer w a
+pass (Writer ((a, f), w)) = Writer (a, f w)
+demo :: Writer [String] (Int, [String])
+demo = listen $ do
+    tell ["secret info", "normal info"]
+    return 10
+demoRedacted :: Writer [String] Int
+demoRedacted = pass $ do
+    return (10, map (\s -> if "secret" `isInfixOf` s then "[REDACTED]" else s))
+main :: IO ()
+main = do
+    let Writer ((res, logged), _) = demo
+    putStrLn $ "Value: " ++ show res
+    putStrLn "Logged messages:"
+    mapM_ putStrLn logged
+    let Writer (res2, log2) = demoRedacted
+    putStrLn $ "\nRedacted result: " ++ show res2
+    mapM_ putStrLn log2
+
+HC21T4 – Writer—Switch Log Monoid
+
+Main.hs
+module Main where
+import Data.Monoid
+newtype Writer w a = Writer { runWriter :: (a, w) }
+instance Functor (Writer w) where
+    fmap f (Writer (a, w)) = Writer (f a, w)
+instance Monoid w => Applicative (Writer w) where
+    pure a = Writer (a, mempty)
+    Writer (f, w1) <*> Writer (a, w2) = Writer (f a, w1 <> w2)
+instance Monoid w => Monad (Writer w) where
+    Writer (a, w1) >>= k =
+        let Writer (b, w2) = k a
+        in Writer (b, w1 <> w2)
+demo :: Writer (Sum Int) Int
+demo = do
+    Writer (5, Sum 1)
+    Writer (10, Sum 2)
+    return 42
+main :: IO ()
+main = do
+    let Writer (res, Sum total) = demo
+    putStrLn $ "Result: " ++ show res
+    putStrLn $ "Total sum of steps: " ++ show total
+
+
+HC21T5 – Reader—Configurable Greeting
+
+Main.hs
+module Main where
+newtype Reader r a = Reader { runReader :: r -> a }
+instance Functor (Reader r) where
+    fmap f (Reader ra) = Reader (f . ra)
+instance Applicative (Reader r) where
+    pure a = Reader (\_ -> a)
+    Reader rf <*> Reader ra = Reader (\r -> rf r (ra r))
+instance Monad (Reader r) where
+    Reader ra >>= k = Reader (\r -> runReader (k (ra r)) r)
+data Config = Config { greetPrefix :: String, shout :: Bool }
+ask :: Reader r r
+ask = Reader id
+local :: (r -> r) -> Reader r a -> Reader r a
+local f (Reader ra) = Reader (ra . f)
+greet :: String -> Reader Config String
+greet name = do
+    cfg <- ask
+    let msg = greetPrefix cfg ++ " " ++ name
+    return $ if shout cfg then map toUpper msg else msg
+  where
+    toUpper c = if 'a' <= c && c <= 'z' then toEnum (fromEnum c - 32) else c
+main :: IO ()
+main = do
+    let cfg = Config "Hello" True
+    putStrLn $ runReader (greet "Alice") cfg
+
+HC21T6 – Reader—Derive Instances & Composition
+
+Main.hs
+module Main where
+newtype Reader r a = Reader { runReader :: r -> a }
+instance Functor (Reader r) where
+    fmap f (Reader ra) = Reader (f . ra)
+instance Applicative (Reader r) where
+    pure a = Reader (\_ -> a)
+    Reader rf <*> Reader ra = Reader (\r -> rf r (ra r))
+instance Monad (Reader r) where
+    Reader ra >>= k = Reader (\r -> runReader (k (ra r)) r)
+data Config = Config { greetPrefix :: String, shout :: Bool }
+ask :: Reader r r
+ask = Reader id
+local :: (r -> r) -> Reader r a -> Reader r a
+local f (Reader ra) = Reader (ra . f)
+greet :: String -> Reader Config String
+greet name = do
+    cfg <- ask
+    let msg = greetPrefix cfg ++ " " ++ name
+    return $ if shout cfg then map toUpper msg else msg
+  where
+    toUpper c = if 'a' <= c && c <= 'z' then toEnum (fromEnum c - 32) else c
+greetTwice :: String -> Reader Config String
+greetTwice name = do
+    first <- greet name
+    second <- greet name
+    return (first ++ " & " ++ second)
+main :: IO ()
+main = do
+    let cfg = Config "Hi" True
+    putStrLn $ runReader (greetTwice "Alice") cfg
+
+HC21T7 – Reader—Mini "Env" Refactor
+
+Main.hs
+module Main where
+import qualified Data.Map as M
+type Env = M.Map String String
+newtype Reader r a = Reader { runReader :: r -> a }
+local :: (r -> r) -> Reader r a -> Reader r a
+local f (Reader ra) = Reader (ra . f)
+instance Functor (Reader r) where
+    fmap f (Reader ra) = Reader (f . ra)
+instance Applicative (Reader r) where
+    pure a = Reader (\_ -> a)
+    Reader rf <*> Reader ra = Reader (\r -> rf r (ra r))
+instance Monad (Reader r) where
+    Reader ra >>= k = Reader (\r -> runReader (k (ra r)) r)
+getPort :: Reader Env String
+getPort = Reader $ \env -> maybe "default" id (M.lookup "DB_PORT" env)
+main :: IO ()
+main = do
+    let env = M.fromList [("DB_PORT","8080")]
+    putStrLn $ "Port: " ++ runReader getPort env
+    let newEnv = local (M.insert "DB_PORT" "9999") getPort
+    putStrLn $ "Overridden Port: " ++ runReader newEnv env
+
+HC21T8 – State—Primitives get/put/modify
+
+Main.hs
+module Main where
+newtype State s a = State { runState :: s -> (a,s) }
+instance Functor (State s) where
+    fmap f (State sa) = State (\s -> let (a,s') = sa s in (f a, s'))
+instance Applicative (State s) where
+    pure a = State (\s -> (a,s))
+    State sf <*> State sa = State (\s -> let (f,s1) = sf s; (a,s2) = sa s1 in (f a, s2))
+instance Monad (State s) where
+    State sa >>= k = State (\s -> let (a,s1) = sa s in runState (k a) s1)
+get :: State s s
+get = State (\s -> (s,s))
+put :: s -> State s ()
+put s = State (\_ -> ((),s))
+modify :: (s -> s) -> State s ()
+modify f = State (\s -> ((), f s))
+main :: IO ()
+main = do
+    let st = do
+            x <- get
+            put (x + 1)
+            modify (*2)
+            get
+    let (result, final) = runState st 3
+    putStrLn $ "Result: " ++ show result ++ ", Final state: " ++ show final
+
+HC21T9 – State—Counter While Mapping
+
+Main.hs
+module Main where
+newtype State s a = State { runState :: s -> (a,s) }
+instance Functor (State s) where
+    fmap f (State sa) = State (\s -> let (a,s') = sa s in (f a, s'))
+instance Applicative (State s) where
+    pure a = State (\s -> (a,s))
+    State sf <*> State sa = State (\s -> let (f,s1) = sf s; (a,s2) = sa s1 in (f a, s2))
+instance Monad (State s) where
+    State sa >>= k = State (\s -> let (a,s1) = sa s in runState (k a) s1)
+get :: State s s
+get = State (\s -> (s,s))
+put :: s -> State s ()
+put s = State (\_ -> ((),s))
+modify :: (s -> s) -> State s ()
+modify f = State (\s -> ((), f s))
+mapCount :: (a -> b) -> [a] -> State Int [b]
+mapCount f xs = mapM (\x -> modify (+1) >> return (f x)) xs
+main :: IO ()
+main = do
+    let (res, count) = runState (mapCount (+10) [1,2,3,4]) 0
+    putStrLn $ "Mapped list: " ++ show res
+    putStrLn $ "Count: " ++ show count
+
+HC21T10 – State—Vending Machine Core
+
+Main.hs
+module Main where
+newtype State s a = State { runState :: s -> (a,s) }
+instance Functor (State s) where
+    fmap f (State sa) = State (\s -> let (a,s') = sa s in (f a, s'))
+instance Applicative (State s) where
+    pure a = State (\s -> (a,s))
+    State sf <*> State sa = State (\s -> let (f,s1) = sf s; (a,s2) = sa s1 in (f a, s2))
+instance Monad (State s) where
+    State sa >>= k = State (\s -> let (a,s1) = sa s in runState (k a) s1)
+data VendingState = VendingState { items :: Int, credit :: Int } deriving Show
+get :: State s s
+get = State (\s -> (s,s))
+put :: s -> State s ()
+put s = State (\_ -> ((),s))
+modify :: (s -> s) -> State s ()
+modify f = State (\s -> ((), f s))
+insertCoin :: Int -> State VendingState ()
+insertCoin n = modify (\vs -> vs { credit = credit vs + n })
+vend :: State VendingState String
+vend = do
+    vs <- get
+    if items vs > 0 && credit vs >= 5
+        then do
+            modify (\v -> v { items = items v - 1, credit = credit v - 5 })
+            return "Vended!"
+        else return "Cannot vend."
+getChange :: State VendingState Int
+getChange = do
+    vs <- get
+    put vs { credit = 0 }
+    return (credit vs)
+vendingSequence :: State VendingState String
+vendingSequence = do
+    insertCoin 10
+    msg <- vend
+    chg <- getChange
+    return (msg ++ "," ++ show chg)
+main :: IO ()
+main = do
+    let initial = VendingState 3 0
+        (result, final) = runState vendingSequence initial
+    putStrLn $ "Vending result: " ++ show result
+    putStrLn $ "Final state: " ++ show final
+
+HC21T11 – State—Undo Stack
+
+Main.hs
+module Main where
+newtype State s a = State { runState :: s -> (a,s) }
+instance Functor (State s) where
+    fmap f (State sa) = State (\s -> let (a,s') = sa s in (f a, s'))
+instance Applicative (State s) where
+    pure a = State (\s -> (a,s))
+    State sf <*> State sa = State (\s -> let (f,s1) = sf s; (a,s2) = sa s1 in (f a, s2))
+instance Monad (State s) where
+    State sa >>= k = State (\s -> let (a,s1) = sa s in runState (k a) s1)
+get :: State s s
+get = State (\s -> (s,s))
+put :: s -> State s ()
+put s = State (\_ -> ((),s))
+setValue :: Int -> State (Int,[Int]) ()
+setValue n = do
+    (cur,hist) <- get
+    put (n, cur:hist)
+undo :: State (Int,[Int]) ()
+undo = do
+    (cur,hist) <- get
+    case hist of
+        []     -> return ()
+        (x:xs) -> put (x,xs)
+main :: IO ()
+main = do
+    let initial = (0,[])
+        actions = do
+            setValue 5
+            setValue 10
+            undo
+            undo
+    let (_, final) = runState actions initial
+    putStrLn $ "Final state (current, history): " ++ show final
+
+HC21T12 – State—Deterministic Random Walk
+
+Main.hs
+module Main where
+newtype State s a = State { runState :: s -> (a,s) }
+instance Functor (State s) where
+    fmap f (State sa) = State (\s -> let (a,s') = sa s in (f a, s'))
+instance Applicative (State s) where
+    pure a = State (\s -> (a,s))
+    State sf <*> State sa = State (\s -> let (f,s1) = sf s; (a,s2) = sa s1 in (f a, s2))
+instance Monad (State s) where
+    State sa >>= k = State (\s -> let (a,s1) = sa s in runState (k a) s1)
+get :: State s s
+get = State (\s -> (s,s))
+put :: s -> State s ()
+put s = State (\_ -> ((),s))
+modify :: (s -> s) -> State s ()
+modify f = State (\s -> ((), f s))
+type Pos = (Int, Int)
+type Seed = Int
+randomStep :: State (Seed, Pos) ()
+randomStep = do
+    (seed,(x,y)) <- get
+    let dir = seed `mod` 4
+        newPos = case dir of
+            0 -> (x+1,y)
+            1 -> (x-1,y)
+            2 -> (x,y+1)
+            _ -> (x,y-1)
+        newSeed = (seed * 1103515245 + 12345) `mod` (2^31)
+    put (newSeed,newPos)
+randomWalk :: Int -> State (Seed, Pos) [Pos]
+randomWalk 0 = do (_,p) <- get; return [p]
+randomWalk n = do
+    (_,p) <- get
+    randomStep
+    rest <- randomWalk (n-1)
+    return (p:rest)
+main :: IO ()
+main = do
+    let initial = (42,(0,0))
+        (path, final) = runState (randomWalk 5) initial
+    putStrLn $ "Path: " ++ show path
+    putStrLn $ "Final state: " ++ show final
+
+HC21T13 – Reader + Writer—Configurable Logging
+
+Main.hs
+module Main where
+import Data.Monoid
+newtype Reader r a = Reader { runReader :: r -> a }
+instance Functor (Reader r) where fmap f (Reader ra) = Reader (f . ra)
+instance Applicative (Reader r) where
+    pure a = Reader (\_ -> a)
+    Reader rf <*> Reader ra = Reader (\r -> rf r (ra r))
+instance Monad (Reader r) where
+    Reader ra >>= k = Reader (\r -> runReader (k (ra r)) r)
+newtype Writer w a = Writer { runWriter :: (a,w) }
+instance Functor (Writer w) where
+    fmap f (Writer (a,w)) = Writer (f a,w)
+instance Monoid w => Applicative (Writer w) where
+    pure a = Writer (a,mempty)
+    Writer (f,w1) <*> Writer (a,w2) = Writer (f a, w1<>w2)
+instance Monoid w => Monad (Writer w) where
+    Writer (a,w1) >>= k = let Writer (b,w2) = k a in Writer (b,w1<>w2)
+tell :: Monoid w => w -> Writer w ()
+tell w = Writer ((),w)
+data Config = Config { prefix :: String }
+step :: String -> Reader Config (Writer [String] ())
+step msg = Reader $ \cfg -> tell [prefix cfg ++ msg]
+main :: IO ()
+main = do
+    let cfg = Config "[LOG] "
+        actions = do
+            step "start"
+            step "processing"
+            step "done"
+    let logs = runWriter $ runReader actions cfg
+    putStrLn "Logs:"
+    mapM_ putStrLn (snd logs)
+
+HC21T14 – State + Writer—Instrumented State
+
+Main.hs
+module Main where
+import Data.Monoid
+newtype State s a = State { runState :: s -> (a,s) }
+instance Functor (State s) where
+    fmap f (State sa) = State (\s -> let (a,s') = sa s in (f a,s'))
+instance Applicative (State s) where
+    pure a = State (\s -> (a,s))
+    State sf <*> State sa = State (\s -> let (f,s1) = sf s; (a,s2) = sa s1 in (f a, s2))
+instance Monad (State s) where
+    State sa >>= k = State (\s -> let (a,s1) = sa s in runState (k a) s1)
+newtype Writer w a = Writer { runWriter :: (a,w) }
+instance Monoid w => Functor (Writer w) where
+    fmap f (Writer (a,w)) = Writer (f a,w)
+instance Monoid w => Applicative (Writer w) where
+    pure a = Writer (a,mempty)
+    Writer (f,w1) <*> Writer (a,w2) = Writer (f a, w1<>w2)
+instance Monoid w => Monad (Writer w) where
+    Writer (a,w1) >>= k = let Writer (b,w2) = k a in Writer (b,w1<>w2)
+tell :: Monoid w => w -> Writer w ()
+tell w = Writer ((),w)
+type Instrumented s = State s (Writer [String] ())
+inc :: Instrumented Int
+inc = State $ \s -> (Writer ((), ["Increment " ++ show s]), s+1)
+dec :: Instrumented Int
+dec = State $ \s -> (Writer ((), ["Decrement " ++ show s]), s-1)
+sequenceOps :: Instrumented Int
+sequenceOps = do
+    inc
+    inc
+    dec
+    inc
+main :: IO ()
+main = do
+    let (Writer (_,logs), finalState) = runState sequenceOps 0
+    putStrLn $ "Final state: " ++ show finalState
+    putStrLn "Logs:"
+    mapM_ putStrLn logs
+
+
+HC21T15 – Reader + State—Environment-Driven State Machine
+
+Main.hs
+module Main where
+newtype Reader r a = Reader { runReader :: r -> a }
+instance Functor (Reader r) where fmap f (Reader ra) = Reader (f . ra)
+instance Applicative (Reader r) where
+    pure a = Reader (\_ -> a)
+    Reader rf <*> Reader ra = Reader (\r -> rf r (ra r))
+instance Monad (Reader r) where
+    Reader ra >>= k = Reader (\r -> runReader (k (ra r)) r)
+newtype State s a = State { runState :: s -> (a,s) }
+instance Functor (State s) where
+    fmap f (State sa) = State (\s -> let (a,s') = sa s in (f a, s'))
+instance Applicative (State s) where
+    pure a = State (\s -> (a,s))
+    State sf <*> State sa = State (\s -> let (f,s1) = sf s; (a,s2) = sa s1 in (f a, s2))
+instance Monad (State s) where
+    State sa >>= k = State (\s -> let (a,s1) = sa s in runState (k a) s1)
+data Config = Config { threshold :: Int }
+tick :: Reader Config (State Int Bool)
+tick = Reader $ \cfg -> State $ \s ->
+    let s' = s + 1
+    in (s' >= threshold cfg, s')
+runTicks :: Config -> Int -> [(Bool,Int)]
+runTicks cfg n = go n 0 []
+  where
+    go 0 _ acc = reverse acc
+    go k st acc =
+        let (b,st') = runState (runReader tick cfg) st
+        in go (k-1) st' ((b,st'):acc)
+main :: IO ()
+main = do
+    let cfg1 = Config 3
+        cfg2 = Config 5
+    print $ runTicks cfg1 5
+    print $ runTicks cfg2 5
+
+HC21T16 – Laws—Associativity & local/ask Invariants
+
+Main.hs
+module Main where
+import Data.Monoid
+newtype Writer w a = Writer { runWriter :: (a,w) }
+instance Monoid w => Functor (Writer w) where
+    fmap f (Writer (a,w)) = Writer (f a,w)
+instance Monoid w => Applicative (Writer w) where
+    pure a = Writer (a,mempty)
+    Writer (f,w1) <*> Writer (a,w2) = Writer (f a, w1<>w2)
+instance Monoid w => Monad (Writer w) where
+    Writer (a,w1) >>= k = let Writer (b,w2) = k a in Writer (b,w1<>w2)
+tell :: Monoid w => w -> Writer w ()
+tell w = Writer ((),w)
+assocLaw :: Bool
+assocLaw =
+    let m = tell ["a"]
+        k _ = tell ["b"]
+        h _ = tell ["c"]
+        left = (m >>= k) >>= h
+        right = m >>= (\x -> k x >>= h)
+    in runWriter left == runWriter right
+newtype Reader r a = Reader { runReader :: r -> a }
+instance Functor (Reader r) where fmap f (Reader ra) = Reader (f . ra)
+instance Applicative (Reader r) where
+    pure a = Reader (\_ -> a)
+    Reader rf <*> Reader ra = Reader (\r -> rf r (ra r))
+instance Monad (Reader r) where
+    Reader ra >>= k = Reader (\r -> runReader (k (ra r)) r)
+ask :: Reader r r
+ask = Reader id
+local :: (r -> r) -> Reader r a -> Reader r a
+local f (Reader ra) = Reader (ra . f)
+readerLaw1 :: Eq r => r -> Bool
+readerLaw1 r = runReader (local id ask) r == runReader ask r
+readerLaw2 :: Eq a => r -> (r -> r) -> (r -> Reader r a) -> Bool
+readerLaw2 r f k =
+    runReader (local f (ask >>= k)) r
+    == runReader (ask >>= (\r' -> local f (k r'))) r
+main :: IO ()
+main = do
+    putStrLn $ "Writer associativity law holds: " ++ show assocLaw
+    print $ readerLaw1 5
+    print $ readerLaw2 10 (+1) (\x -> Reader (\_ -> x))
+
+
+HC21T17 – Refactor Legacy Env/Log/State Code
+
+Main.hs
+module Main where
+import qualified Data.Map as M
+import Data.Monoid
+newtype Reader r a = Reader { runReader :: r -> a }
+instance Functor (Reader r) where
+    fmap f (Reader ra) = Reader (f . ra)
+instance Applicative (Reader r) where
+    pure a = Reader (\_ -> a)
+    Reader rf <*> Reader ra = Reader (\r -> rf r (ra r))
+instance Monad (Reader r) where
+    Reader ra >>= k = Reader (\r -> runReader (k (ra r)) r)
+ask :: Reader r r
+ask = Reader id
+local :: (r -> r) -> Reader r a -> Reader r a
+local f (Reader ra) = Reader (ra . f)
+newtype Writer w a = Writer { runWriter :: (a,w) }
+instance Monoid w => Functor (Writer w) where
+    fmap f (Writer (a,w)) = Writer (f a,w)
+instance Monoid w => Applicative (Writer w) where
+    pure a = Writer (a,mempty)
+    Writer (f,w1) <*> Writer (a,w2) = Writer (f a, w1<>w2)
+instance Monoid w => Monad (Writer w) where
+    Writer (a,w1) >>= k = let Writer (b,w2) = k a in Writer (b,w1<>w2)
+tell :: Monoid w => w -> Writer w ()
+tell w = Writer ((),w)
+newtype State s a = State { runState :: s -> (a,s) }
+instance Functor (State s) where
+    fmap f (State sa) = State (\s -> let (a,s') = sa s in (f a, s'))
+instance Applicative (State s) where
+    pure a = State (\s -> (a,s))
+    State sf <*> State sa = State (\s -> let (f,s1) = sf s; (a,s2) = sa s1 in (f a, s2))
+instance Monad (State s) where
+    State sa >>= k = State (\s -> let (a,s1) = sa s in runState (k a) s1)
+get :: State s s
+get = State (\s -> (s,s))
+put :: s -> State s ()
+put s = State (\_ -> ((),s))
+modify :: (s -> s) -> State s ()
+modify f = State (\s -> ((),f s))
+type Env = M.Map String String
+type LogState s a = Reader Env (State s (Writer [String] a))
+incrementCounter :: LogState Int Int
+incrementCounter = Reader $ \_ -> State $ \s -> (Writer (s+1, ["Incremented from " ++ show s]), s+1)
+main :: IO ()
+main = do
+    let env = M.fromList [("mode","production")]
+        stAction = runReader incrementCounter env
+        (Writer (result, logs), finalState) = runState stAction 0
+    putStrLn $ "Result: " ++ show result
+    putStrLn $ "Final state: " ++ show finalState
+    putStrLn "Logs:"
+    mapM_ putStrLn logs
